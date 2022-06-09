@@ -1,9 +1,15 @@
 part of dart_amqp.protocol;
 
 class TuningSettings {
-  int maxChannels = 0;
+  TuningSettings({
+    this.maxChannels = 0,
+    this.maxFrameSize = 4096,
+    this.heartbeatPeriod = Duration.zero,
+  });
 
-  int maxFrameSize = 4096;
+  int maxChannels;
 
-  Duration heartbeatPeriod = Duration.zero;
+  int maxFrameSize;
+
+  Duration heartbeatPeriod;
 }
