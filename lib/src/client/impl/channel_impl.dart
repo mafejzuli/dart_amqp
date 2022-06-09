@@ -725,7 +725,7 @@ class _ChannelImpl implements Channel {
     _heartbeatTimeout = Timer(
       _client.tuningSettings.heartbeatPeriod * 2,
       () {
-        throw HeartbeatTimeoutException();
+        _client._handleException(HeartbeatTimeoutException());
       },
     );
   }

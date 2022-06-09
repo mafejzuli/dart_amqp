@@ -166,18 +166,6 @@ class _ClientImpl implements Client {
       return;
     }
 
-    // When heartbeats time out we should close the connection without following
-    // Connection.Close/Close-Ok handshaking.
-    if (ex is HeartbeatTimeoutException) {
-      for (final channel in _channels.values) {
-        channel.dispose();
-      }
-      _channels.clear();
-      _connected!.completeError(ex);
-      _socket?.close();
-      return;
-    }
-
     // If we are still handshaking, it could be that the server disconnected us
     // due to a failed SASL auth attempt. In this case we should trigger a connection
     // exception
