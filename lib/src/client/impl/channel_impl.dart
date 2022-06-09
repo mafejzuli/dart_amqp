@@ -161,8 +161,12 @@ class _ChannelImpl implements Channel {
           ..maxFrameSize = serverResponse.frameMax
           ..maxChannels = _client.tuningSettings.maxChannels > 0
               ? _client.tuningSettings.maxChannels
-              : serverResponse.channelMax
-          ..heartbeatPeriod = Duration(seconds: serverResponse.heartbeat);
+              : serverResponse.channelMax;
+
+        if (_client.tuningSettings.heartbeatPeriod == Duration.zero) {
+          _client.tuningSettings.heartbeatPeriod =
+              Duration(seconds: serverResponse.heartbeat);
+        }
 
         if (_client.tuningSettings.heartbeatPeriod != Duration.zero) {
           // The client should start sending heartbeats after receiving Connection.Tune
