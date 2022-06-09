@@ -16,6 +16,9 @@ class ConnectionSettings {
   // The time to wait  before trying to reconnect
   Duration reconnectWaitTime;
 
+  /// The timeout for the socket connection.
+  Duration? connectTimeout;
+
   // Authentication provider
   Authenticator authProvider;
 
@@ -42,5 +45,6 @@ class ConnectionSettings {
     TuningSettings? tuningSettings,
     this.tlsContext,
     this.onBadCertificate,
+    this.connectTimeout,
   }) : tuningSettings = tuningSettings ?? TuningSettings();
 }
