@@ -32,7 +32,7 @@ class _ClientImpl implements Client {
   /// [reconnectWaitTime] ms up to [maxConnectionAttempts] times. If all connection attempts
   /// fail, then the [_connected] [Future] returned by a call to [open[ will also fail
 
-  /*Future _reconnect() {
+  Future _reconnect() {
     _connected ??= Completer();
 
     Future<Socket> fs;
@@ -93,74 +93,6 @@ class _ClientImpl implements Client {
     });
 
     return _connected!.future;
-  }*/
-
-  Future _reconnect() async {
-    _connected ??= Completer();
-
-    try {
-      if (settings.tlsContext != null) {
-        connectionLogger.info(
-          'Trying to connect to ${settings.host}:${settings.port} using TLS '
-          '[attempt ${_connectionAttempt + 1}/'
-          '${settings.maxConnectionAttempts}]',
-        );
-        _socket = await SecureSocket.connect(
-          settings.host,
-          settings.port,
-          context: settings.tlsContext,
-          onBadCertificate: settings.onBadCertificate,
-          timeout: settings.connectTimeout,
-        );
-      } else {
-        connectionLogger.info(
-          'Trying to connect to ${settings.host}:${settings.port}'
-          '[attempt ${_connectionAttempt | 1}/${settings.maxConnectionAttempts}',
-        );
-        _socket = await Socket.connect(
-          settings.host,
-          settings.port,
-          timeout: settings.connectTimeout,
-        );
-      }
-
-      // Bind processors and initiate handshake
-      RawFrameParser(tuningSettings)
-          .transformer
-          .bind(_socket!)
-          .transform(AmqpMessageDecoder().transformer)
-          .listen(
-            _handleMessage,
-            onError: _handleException,
-            onDone: () =>
-                _handleException(const SocketException('Socket close')),
-          );
-
-      // Allocate channel 0 for handshaking and transmit the AMQP header to
-      // bootstrap the handshake
-      _channels.clear();
-      _channels.putIfAbsent(0, () => _ChannelImpl(0, this));
-    } catch (e) {
-      // Connection attempt completed with an error (probably protocol mismatch)
-      if (_connected!.isCompleted) {
-        return;
-      }
-
-      if (++_connectionAttempt >= settings.maxConnectionAttempts) {
-        final errorMessage =
-            'Could not connect to ${settings.host}:${settings.port} after '
-            '${settings.maxConnectionAttempts} attempts. Giving up';
-
-        connectionLogger.severe(errorMessage);
-        _connected!.completeError(ConnectionFailedException(errorMessage));
-
-        // Clear _connected future so the client can invoke open() in the future
-        _connected = null;
-      } else {
-        // Retry after reconnectWaitTime ms
-        Timer(settings.reconnectWaitTime, _reconnect);
-      }
-    }
   }
 
   /// Check if a connection is currently in handshake state
