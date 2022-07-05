@@ -19,6 +19,10 @@ class ConnectionSettings {
   /// The timeout for the socket connection.
   Duration? connectTimeout;
 
+  /// The timeout for the socket disconnection (when to kill the socket instead
+  /// of connection-close handshaking).
+  Duration? disconnectTimeout;
+
   // Authentication provider
   Authenticator authProvider;
 
