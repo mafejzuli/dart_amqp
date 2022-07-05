@@ -50,5 +50,6 @@ class ConnectionSettings {
     this.tlsContext,
     this.onBadCertificate,
     this.connectTimeout,
+    this.disconnectTimeout,
   }) : tuningSettings = tuningSettings ?? TuningSettings();
 }
