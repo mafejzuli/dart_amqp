@@ -258,22 +258,25 @@ class _ClientImpl implements Client {
             .map((_ChannelImpl channel) => channel.close()))
         .then((_) => _socket!.flush())
         .then((_) => _socket!.close(), onError: (e) {
-          // Mute exception as the socket may be already closed
-        })
-        .timeout(settings.disconnectTimeout ?? const Duration(seconds: 30))
-        .whenComplete(() {
-          final zeroChannel = _channels[0];
+      // Mute exception as the socket may be already closed
+    }).timeout(
+      settings.disconnectTimeout ?? const Duration(seconds: 30),
+      onTimeout: () {
+        connectionLogger.warning('Disconnection timed out, killing connection');
+      },
+    ).whenComplete(() {
+      final zeroChannel = _channels[0];
 
-          zeroChannel?._stopMonitoringHeartbeats();
-          zeroChannel?._stopHeartbeating();
+      zeroChannel?._stopMonitoringHeartbeats();
+      zeroChannel?._stopHeartbeating();
 
-          _socket!.destroy();
-          _socket = null;
-          _connected = null;
-          _error.close();
-          _clientClosed!.complete();
-          _clientClosed = null;
-        });
+      _socket!.destroy();
+      _socket = null;
+      _connected = null;
+      _error.close();
+      _clientClosed!.complete();
+      _clientClosed = null;
+    });
 
     return _clientClosed!.future;
   }
